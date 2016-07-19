@@ -47,16 +47,16 @@ status() {
 usage() {
     echo "Usage: $PROG <options> start|stop|status|restart"
     echo "Options:"
-    echo "    -c <hostname/ip>  allow only given hosts to connect to the server (default is tsung_master)"
+    echo "    -a <hostname/ip>  allow only given hosts to connect to the server (default is tsung_master)"
     echo "    -p <port>         use the special port for listen (default is 19999)"
     echo "    -h                display this help and exit"
     exit
 }
 
-while getopts "c:p:h" Option
+while getopts "a:p:h" Option
 do
     case $Option in
-        c) TSUNG_MASTER=$OPTARG;;
+        a) TSUNG_MASTER=$OPTARG;;
         p) PORT=$OPTARG;;
         h) usage;;
         *) usage;;
