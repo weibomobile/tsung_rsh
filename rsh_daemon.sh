@@ -15,7 +15,7 @@ start() {
         exit 1
     fi
 
-    if command -v ncat >/dev/null 2&>1; then 
+    if [ -x "$(command -v ncat)" ]; then
         echo "$PROG starting now ..."
         ncat -4 -k -l $PORT -e $FILTER --allow $TSUNG_MASTER &
     else

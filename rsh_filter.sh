@@ -1,20 +1,20 @@
 #!/bin/bash
 
-cmdstr="erl"
+ERL_PREFIX="erl"
 
 while true
 do
-    read cmd
+    read CMD
 
-    case $cmd in
+    case $CMD in
         ping)
             echo "pong"
             exit 0
             ;;
 
         *)
-            if [[ $cmd == *"${cmdstr}"* ]]; then
-                exec $cmd
+            if [[ $CMD == *"${ERL_PREFIX}"* ]]; then
+                exec $CMD
             fi
             exit 0
             ;;
