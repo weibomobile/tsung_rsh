@@ -1,11 +1,37 @@
 #!/bin/bash
 # the script using for start/stop remote shell daemon server to replace the ssh server
 PORT=19999
-FILTER=$(cd `dirname $0`; pwd)/rsh_filter.sh
+FILTER=~/tmp/_tmp_rsh_filter.sh
 # the tsung master's hostname or ip
 TSUNG_MASTER=tsung_master
 
 PROG=`basename $0`
+
+prepare() {
+    cat << EOF > $FILTER
+#!/bin/bash
+
+ERL_PREFIX="erl"
+
+while true
+do
+    read CMD
+    case \$CMD in
+        ping)
+            echo "pong"
+            exit 0
+            ;;
+        *)
+            if [[ \$CMD == *"\${ERL_PREFIX}"* ]]; then
+                exec \$CMD
+            fi
+            exit 0
+            ;;
+    esac
+done
+EOF
+    chmod a+x $FILTER
+}
 
 start() {
     NUM=$(ps -ef|grep ncat | grep ${PORT} | grep -v grep | wc -l)
@@ -66,6 +92,7 @@ shift $(($OPTIND - 1))
 
 case $1 in
         start)
+            prepare
             start
             ;;
         stop)
