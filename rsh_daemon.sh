@@ -4,7 +4,7 @@ PORT=19999
 FILTER=~/tmp/_tmp_rsh_filter.sh
 # the tsung master's hostname or ip
 TSUNG_MASTER=tsung_master
-
+SPECIAL_PATH=""
 PROG=`basename $0`
 
 prepare() {
@@ -23,7 +23,7 @@ do
             ;;
         *)
             if [[ \$CMD == *"\${ERL_PREFIX}"* ]]; then
-                exec \$CMD
+                exec $SPECIAL_PATH\${CMD}
             fi
             exit 0
             ;;
@@ -75,15 +75,25 @@ usage() {
     echo "Options:"
     echo "    -a <hostname/ip>  allow only given hosts to connect to the server (default is tsung_master)"
     echo "    -p <port>         use the special port for listen (default is 19999)"
+    echo "    -s <the_erl_path> use the special erlang's erts bin path for running erlang (default is blank)"
     echo "    -h                display this help and exit"
     exit
 }
 
-while getopts "a:p:h" Option
+while getopts "a:p:s:h" Option
 do
     case $Option in
         a) TSUNG_MASTER=$OPTARG;;
         p) PORT=$OPTARG;;
+        s) TMP_ERL=$OPTARG
+            if [ "$OPTARG" != "" ]; then
+                if [[ "$OPTARG" == *"/" ]]; then
+                    SPECIAL_PATH=$OPTARG
+                else
+                    SPECIAL_PATH=$OPTARG"/"
+                fi
+            fi
+            ;;
         h) usage;;
         *) usage;;
     esac
