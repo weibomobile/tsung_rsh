@@ -8,6 +8,7 @@ SPECIAL_PATH=""
 PROG=`basename $0`
 
 prepare() {
+    mkdir -p ~/tmp/
     cat << EOF > $FILTER
 #!/bin/bash
 
