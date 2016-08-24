@@ -7,6 +7,7 @@ TSUNG_MASTER=tsung_master
 SPECIAL_PATH=""
 SEC_KEY=""
 CMD_PREFIX="erl"
+REGISTER_URL=""
 PROG=`basename $0`
 
 prepare() {
@@ -90,19 +91,29 @@ status() {
     fi
 }
 
+callback() {
+    if [ -x "$(command -v curl)" ] && [[ "$REGISTER_URL" != "" ]]; then
+        echo "$PROG starting call register_url : $REGISTER_URL ..."
+        curl "$REGISTER_URL"
+    else
+        echo "no exists ncat command, please install it ..."
+    fi
+}
+
 usage() {
-    echo "Usage: $PROG <options> start|stop|status|restart"
+    echo "Usage: $PROG <options> start|stop|status|restart|callback"
     echo "Options:"
     echo "    -a <hostname/ip>      allow only given hosts to connect to the server (default is tsung_master)"
     echo "    -p <port>             use the special port for listen (default is 19999)"
     echo "    -s <the_erl_path>     use the special erlang's erts bin path for running erlang (default is blank)"
     echo "    -k <the_sec_key>      use the special for access right (default is blank)"
     echo "    -c <the_cmd_prefix>   assign the special command (default is erl)"
+    echo "    -r <the_callback_url> call the url (default is blank)"
     echo "    -h                    display this help and exit"
     exit
 }
 
-while getopts "a:p:s:k:c:h" Option
+while getopts "a:p:s:k:c:u:h" Option
 do
     case $Option in
         a) TSUNG_MASTER=$OPTARG;;
@@ -118,6 +129,7 @@ do
             ;;
         k) SEC_KEY=$OPTARG;;
         c) CMD_PREFIX=$OPTARG;;
+        u) REGISTER_URL=$OPTARG;;
         h) usage;;
         *) usage;;
     esac
@@ -128,9 +140,11 @@ case $1 in
         start)
             prepare
             start
+            callback
             ;;
         stop)
             stop
+            callback
             ;;
         status)
             status
@@ -138,6 +152,10 @@ case $1 in
         restart)
             stop
             start
+            callback
+            ;;
+        callback)
+            callback
             ;;
         *)
             usage
