@@ -15,10 +15,12 @@ First of all, you should `git clone https://github.com/weibomobile/tsung_rsh.git
 ```bash
 Usage: rsh_daemon.sh <options> start|stop|status|restart
 Options:
-    -a <hostname/ip>  allow only given hosts to connect to the server (default is tsung_master)
-    -p <port>         use the special port for listen (default is 19999)
-    -s <the_erl_path> use the special erlang's erts bin path for running erlang (default is blank)
-    -h                display this help and exit
+    -a <hostname/ip>      allow only given hosts to connect to the server (default is tsung_master)
+    -p <port>             use the special port for listen (default is 19999)
+    -s <the_erl_path>     use the special erlang's erts bin path for running erlang (default is blank)
+    -k <the_sec_key>      use the special for access right (default is blank)
+    -c <the_cmd_prefix>   assign the special command (default is erl)
+    -h                    display this help and exit
 ```
 
 NOTE:
@@ -58,14 +60,46 @@ When get tsung_controller start the slave's command:
 ```bash
 erl -detached -noinput -master tsung_controller@tsung_master -sname tsung8@node136 ...
 ```
-	
+
 Then the daemon script will do:
 
 ```bash
 exec /root/.tsung/erlang/r18.1/bin/erl -detached -noinput -master tsung_controller@tsung_master -sname tsung8@node136 ...
 ```
 
-#### 4). How debug the rsh daemon server ?
+#### 4). Aassign The SecKey for Access Right
+
+If you need by the seckey avoid some one access, you can assign the seckey  for access right.
+
+```bash
+sh rsh_daemon.sh -a "" -c "" -k "the_seckey_string;" start
+```
+
+When the client want to run some command :
+
+```bash
+echo "the_seckey_string;ls -lah" | ncat 127.0.0.1 19999
+```
+
+If some one don't have the seckey, he would got the response:
+
+> Invalid Access
+
+#### 5). The callback when start/stop
+
+When you call `rsh_daemon.sh` start/stop method, you can assign the call back url address:
+
+```bash
+sh rsh_daemon.sh -a "" -c "" -k "the_seckey_string;" -u "https://www.baidu.com/s?wd=hello" start/stop
+```
+
+And also, you can call callback method alone:
+
+```bash
+sh rsh_daemon.sh -u "https://www.baidu.com/s?wd=hello" callback
+```
+
+#### 6). How debug the rsh daemon server ?
 
 First of all, starting the daemon :
 
