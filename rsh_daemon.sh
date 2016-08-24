@@ -5,6 +5,8 @@ FILTER=~/tmp/_tmp_rsh_filter.sh
 # the tsung master's hostname or ip
 TSUNG_MASTER=tsung_master
 SPECIAL_PATH=""
+SEC_KEY=""
+CMD_PREFIX="erl"
 PROG=`basename $0`
 
 prepare() {
@@ -12,7 +14,7 @@ prepare() {
     cat << EOF > $FILTER
 #!/bin/bash
 
-ERL_PREFIX="erl"
+ERL_PREFIX="$CMD_PREFIX"
 
 while true
 do
@@ -23,8 +25,20 @@ do
             exit 0
             ;;
         *)
-            if [[ \$CMD == *"\${ERL_PREFIX}"* ]]; then
-                exec $SPECIAL_PATH\${CMD}
+            if [[ "${SEC_KEY}" != "" ]]; then
+                if [[ \$CMD == "$SEC_KEY"* ]]; then
+                    Index=${#SEC_KEY}
+                    RealCmd=\${CMD:\$Index}
+                else
+                    echo "Invalid Access"
+                    exit 0
+                fi
+            else
+                RealCmd=\${CMD}
+            fi
+
+            if [[ \$RealCmd == *"\${ERL_PREFIX}"* ]]; then
+                exec $SPECIAL_PATH\${RealCmd}
             fi
             exit 0
             ;;
@@ -44,7 +58,12 @@ start() {
 
     if [ -x "$(command -v ncat)" ]; then
         echo "$PROG starting now ..."
-        ncat -4 -k -l $PORT -e $FILTER --allow $TSUNG_MASTER &
+
+        if [[ "$TSUNG_MASTER" != "" ]]; then
+            ncat -4 -k -l $PORT -e $FILTER --allow $TSUNG_MASTER &
+        else
+            ncat -4 -k -l $PORT -e $FILTER &
+        fi
     else
         echo "no exists ncat command, please install it ..."
     fi
@@ -74,14 +93,16 @@ status() {
 usage() {
     echo "Usage: $PROG <options> start|stop|status|restart"
     echo "Options:"
-    echo "    -a <hostname/ip>  allow only given hosts to connect to the server (default is tsung_master)"
-    echo "    -p <port>         use the special port for listen (default is 19999)"
-    echo "    -s <the_erl_path> use the special erlang's erts bin path for running erlang (default is blank)"
-    echo "    -h                display this help and exit"
+    echo "    -a <hostname/ip>      allow only given hosts to connect to the server (default is tsung_master)"
+    echo "    -p <port>             use the special port for listen (default is 19999)"
+    echo "    -s <the_erl_path>     use the special erlang's erts bin path for running erlang (default is blank)"
+    echo "    -k <the_sec_key>      use the special for access right (default is blank)"
+    echo "    -c <the_cmd_prefix>   assign the special command (default is erl)"
+    echo "    -h                    display this help and exit"
     exit
 }
 
-while getopts "a:p:s:h" Option
+while getopts "a:p:s:k:c:h" Option
 do
     case $Option in
         a) TSUNG_MASTER=$OPTARG;;
@@ -95,6 +116,8 @@ do
                 fi
             fi
             ;;
+        k) SEC_KEY=$OPTARG;;
+        c) CMD_PREFIX=$OPTARG;;
         h) usage;;
         *) usage;;
     esac
