@@ -92,11 +92,9 @@ status() {
 }
 
 callback() {
-    if [ -x "$(command -v curl)" ] && [[ "$REGISTER_URL" != "" ]]; then
+    if [[ "$REGISTER_URL" != "" ]] && [ -x "$(command -v curl)" ] ; then
         echo "$PROG starting call register_url : $REGISTER_URL ..."
         curl "$REGISTER_URL"
-    else
-        echo "no exists ncat command, please install it ..."
     fi
 }
 
